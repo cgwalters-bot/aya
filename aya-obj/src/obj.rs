@@ -223,7 +223,6 @@ pub struct Function {
 /// - `action`
 /// - `syscall`
 /// - `struct_ops+`
-/// - `fmod_ret+`, `fmod_ret.s+`
 /// - `iter+`, `iter.s+`
 #[derive(Debug, Clone)]
 #[expect(missing_docs, reason = "TODO")]
@@ -270,6 +269,9 @@ pub enum ProgramSection {
         sleepable: bool,
     },
     FExit {
+        sleepable: bool,
+    },
+    FModRet {
         sleepable: bool,
     },
     FlowDissector,
@@ -435,6 +437,8 @@ impl FromStr for ProgramSection {
             "fentry.s" => Self::FEntry { sleepable: true },
             "fexit" => Self::FExit { sleepable: false },
             "fexit.s" => Self::FExit { sleepable: true },
+            "fmod_ret" => Self::FModRet { sleepable: false },
+            "fmod_ret.s" => Self::FModRet { sleepable: true },
             "flow_dissector" => Self::FlowDissector,
             "freplace" => Self::Extension,
             "sk_lookup" => Self::SkLookup,
@@ -2580,6 +2584,55 @@ mod tests {
             obj.programs.get("foo"),
             Some(Program {
                 section: ProgramSection::FExit {
+                    sleepable: true,
+                    ..
+                },
+                ..
+            })
+        );
+    }
+
+    #[test]
+    fn test_parse_section_fmod_ret() {
+        let mut obj = fake_obj();
+        fake_sym(&mut obj, 0, 0, "foo", FAKE_INS_LEN);
+
+        assert_matches!(
+            obj.parse_section(fake_section(
+                EbpfSectionKind::Program,
+                "fmod_ret/foo",
+                bytes_of(&fake_ins()),
+                None
+            )),
+            Ok(())
+        );
+        assert_matches!(
+            obj.programs.get("foo"),
+            Some(Program {
+                section: ProgramSection::FModRet { .. },
+                ..
+            })
+        );
+    }
+
+    #[test]
+    fn test_parse_section_fmod_ret_sleepable() {
+        let mut obj = fake_obj();
+        fake_sym(&mut obj, 0, 0, "foo", FAKE_INS_LEN);
+
+        assert_matches!(
+            obj.parse_section(fake_section(
+                EbpfSectionKind::Program,
+                "fmod_ret.s/foo",
+                bytes_of(&fake_ins()),
+                None
+            )),
+            Ok(())
+        );
+        assert_matches!(
+            obj.programs.get("foo"),
+            Some(Program {
+                section: ProgramSection::FModRet {
                     sleepable: true,
                     ..
                 },

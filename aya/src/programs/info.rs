@@ -457,7 +457,7 @@ pub enum ProgramType {
     #[doc(alias = "BPF_PROG_TYPE_CGROUP_SOCKOPT")]
     CgroupSockopt,
     /// A Tracing program type. See [`FEntry`](super::fentry::FEntry), [`FExit`](super::fexit::FExit),
-    /// and [`BtfTracePoint`](super::tp_btf::BtfTracePoint) for the program implementations.
+    /// [`FModRet`](super::fmod_ret::FModRet), and [`BtfTracePoint`](super::tp_btf::BtfTracePoint) for the program implementations.
     ///
     /// Introduced in kernel v5.5.
     #[doc(alias = "BPF_PROG_TYPE_TRACING")]
